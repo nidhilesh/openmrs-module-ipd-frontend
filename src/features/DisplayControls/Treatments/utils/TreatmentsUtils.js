@@ -173,8 +173,36 @@ export const isDrugOrderStoppedWithoutAdministration = (drugOrderObject) => {
 };
 
 export const setDosingInstructions = (drugOrder) => {
+  const dosing = drugOrder.dosingInstructions || {};
+
+  let doseStr = dosing.dose;
+  if (doseStr == null && dosing.administrationInstructions) {
+    try {
+      const admin = JSON.parse(dosing.administrationInstructions);
+      const parts = [];
+      if (
+        typeof admin.morningDose !== "undefined" &&
+        admin.morningDose !== null
+      )
+        parts.push(admin.morningDose);
+      if (
+        typeof admin.afternoonDose !== "undefined" &&
+        admin.afternoonDose !== null
+      )
+        parts.push(admin.afternoonDose);
+      if (
+        typeof admin.eveningDose !== "undefined" &&
+        admin.eveningDose !== null
+      )
+        parts.push(admin.eveningDose);
+      if (parts.length) doseStr = parts.join(" - ");
+    } catch (e) {
+      doseStr = dosing.dose;
+    }
+  }
+
   let dosingInstructions =
-    drugOrder.dosingInstructions.dose +
+    doseStr +
     " " +
     drugOrder.dosingInstructions.doseUnits +
     (drugOrder.dosingInstructions.route !== null
